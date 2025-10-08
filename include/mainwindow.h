@@ -28,17 +28,18 @@ private slots:
 
     void on_radioMain_btn_clicked();
 
-    void on_tabWidget_tabBarClicked(int index);
 
 private:
     Ui::MainWindow *ui;
     TestTask* testTask;
     MainTask* mainTask;
     QThread* thread;
+
     Drawing* drawingTestReal;
     Drawing* drawingTestNumerical;
     Drawing* drawingTestInitApprox;
     Drawing* drawingTestError;
+
     Drawing* drawingMainNumerical1;
     Drawing* drawingMainNumerical2;
     Drawing* drawingMainInitApprox1;

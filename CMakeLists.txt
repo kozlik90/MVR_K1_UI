@@ -18,19 +18,19 @@ find_package(OpenGL REQUIRED)
 
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        include/main.cpp
+        include/mainwindow.cpp
+        include/mainwindow.h
+        include/mainwindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(MVR_K1_UI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        testtask.h testtask.cpp
-        maintask.h maintask.cpp
-        drawing.h drawing.cpp
+        include/testtask.h include/testtask.cpp
+        include/maintask.h include/maintask.cpp
+        include/drawing.h include/drawing.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET MVR_K1_UI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -56,10 +56,14 @@ target_link_libraries(MVR_K1_UI PRIVATE
     Qt${QT_VERSION_MAJOR}::OpenGL
     ${OPENGL_LIBRARIES})
 
+
+
 #find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS OpenGLWidgets)
+target_include_directories(MVR_K1_UI PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(MVR_K1_UI PRIVATE Qt::OpenGLWidgets)
 target_link_libraries(MVR_K1_UI PRIVATE Qt6::OpenGLWidgets)
 target_link_libraries(MVR_K1_UI PRIVATE Qt6::OpenGL)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

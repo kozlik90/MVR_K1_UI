@@ -60,8 +60,8 @@ void MainWindow::on_calcButton_clicked()
     drawingMainInitApprox2->draw(mainTask, Drawing::MainImageType::Clr);
     drawingMainError->draw(mainTask, Drawing::MainImageType::Clr);
 
-
     ui->calcButton->setEnabled(false);
+
     delete testTask;
     testTask = nullptr;
     delete mainTask;
@@ -72,19 +72,21 @@ void MainWindow::on_calcButton_clicked()
     ui->infoBrowser->clear();
     ui->progressBar->setValue(0);
     thread = new QThread();
+
     int n = ui->n_Line->text().toInt();
     int m = ui->m_Line->text().toInt();
     double eps = ui->eps_Line->text().toDouble();
     double omega = ui->omega_Line->text().toDouble();
     int Nmax = ui->nMax_Line->text().toInt();
-
     int max = 0;
+
     try{
         if(ui->radioTest_btn->isChecked()) {
             ui->widget1->raise();
             ui->widget2->raise();
             ui->widget3->raise();
             ui->widget4->raise();
+
             testTask = new TestTask(n, m, eps, omega, Nmax);
             connect(thread, SIGNAL(started()), testTask, SLOT(compute()));
             max = 100 / eps;
@@ -101,6 +103,7 @@ void MainWindow::on_calcButton_clicked()
             widget6->raise();
             widget7->raise();
             widget8->raise();
+
             mainTask = new MainTask(n, m, eps, omega, Nmax);
             connect(thread, SIGNAL(started()), mainTask, SLOT(compute()));
             max = 100 / (eps / 10.0);
@@ -120,6 +123,7 @@ void MainWindow::on_calcButton_clicked()
         box.setText(ex.what());
         box.setIcon(QMessageBox::Warning);
         box.exec();
+        ui->calcButton->setEnabled(true);
     }
 
 
@@ -134,11 +138,11 @@ void MainWindow::slotDraw() {
     ui->tabWidget->setCurrentIndex(3);
     ui->tabWidget->setCurrentIndex(4);
     ui->tabWidget->setCurrentIndex(cur);
+
     widget5->setGeometry(ui->widget1->geometry());
     widget6->setGeometry(ui->widget2->geometry());
     widget7->setGeometry(ui->widget3->geometry());
     widget8->setGeometry(ui->widget4->geometry());
-
 
     drawingTestReal->resize(ui->widget1->size());
     drawingTestNumerical->resize(ui->widget2->size());
@@ -151,25 +155,14 @@ void MainWindow::slotDraw() {
     drawingMainInitApprox2->resize(widget8->size());
     drawingMainError->resize(ui->widget9->size());
 
-
-
-
-
     if(ui->radioTest_btn->isChecked()){
-        qDebug() << 1;
         drawingTestReal->draw(testTask, Drawing::TestImageType::Real);
 
-
-        qDebug() << 2;
         drawingTestNumerical->draw(testTask, Drawing::TestImageType::Numerical);
 
-
-        qDebug() << 3;
         drawingTestInitApprox->draw(testTask, Drawing::TestImageType::InitApprox);
 
-
         drawingTestError->draw(testTask, Drawing::TestImageType::Error);
-
     }
     else if (ui->radioMain_btn->isChecked()) {
         drawingMainNumerical1->draw(mainTask, Drawing::MainImageType::Numerical1);
@@ -177,7 +170,9 @@ void MainWindow::slotDraw() {
         drawingMainNumerical2->draw(mainTask, Drawing::MainImageType::Numerical2);
 
         drawingMainInitApprox1->draw(mainTask, Drawing::MainImageType::InitApprox1);
+
         drawingMainInitApprox2->draw(mainTask, Drawing::MainImageType::InitApprox2);
+
         drawingMainError->draw(mainTask, Drawing::MainImageType::Err);
     }
 
@@ -224,38 +219,22 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     ui->tabWidget->setCurrentIndex(cur);
 
     drawingTestReal->resize(ui->widget1->size());
-    qDebug() << "#1" << drawingTestReal->size();
     drawingTestNumerical->resize(ui->widget2->size());
-    qDebug() << "#2" << drawingTestNumerical->size();
     drawingTestInitApprox->resize(ui->widget3->size());
-    qDebug() << "#3" << drawingTestInitApprox->size();
     drawingTestError->resize(ui->widget4->size());
 
     widget5->setGeometry(ui->widget1->geometry());
-    qDebug() << "#5" << widget5->size();
     drawingMainNumerical1->resize(widget5->size());
-
     widget6->setGeometry(ui->widget2->geometry());
     drawingMainNumerical2->resize(widget6->size());
-
     widget7->setGeometry(ui->widget3->geometry());
     drawingMainInitApprox1->resize(widget7->size());
-
     widget8->setGeometry(ui->widget4->geometry());
     drawingMainInitApprox1->resize(widget8->size());
-
     drawingMainError->resize(ui->widget9->size());
 
     QMainWindow::resizeEvent(event);
 }
 
 
-void MainWindow::on_tabWidget_tabBarClicked(int index)
-{
-    qDebug() << "###" << ui->widget1->size();
-    qDebug() << "###" << ui->widget2->size();
-    qDebug() << "###" << ui->widget3->size();
-    qDebug() << "###" << ui->widget4->size();
-    qDebug() << "###" << widget5->size();
-}
 

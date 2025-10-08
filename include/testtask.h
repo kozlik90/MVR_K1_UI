@@ -28,12 +28,12 @@ private:
     friend class Drawing;
 
 public:
-    TestTask(int, int, double, double, int);
+    explicit TestTask(int, int, double, double, int);
     void printInfo();
 
 private:
-    static double u_func(double x, double y);
-    double f_func(double x, double y);
+    static double u_func(const double x, const double y);
+    double f_func(const double x, const double y);
     void set_GU();
     void set_inter();
     void calculateIst();

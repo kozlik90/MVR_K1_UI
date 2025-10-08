@@ -32,7 +32,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent* pe);
     virtual void mouseMoveEvent(QMouseEvent* pe);
     virtual void wheelEvent(QWheelEvent* pe);
-    void drawAxes(float length = 2.0f);
+    void drawAxes(float length = 1.5f);
 
 public:
     Drawing(QWidget* pwgt = 0);

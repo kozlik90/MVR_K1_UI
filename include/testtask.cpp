@@ -12,7 +12,11 @@ TestTask::TestTask(int n_, int m_, double eps_, double omega_, int Nmax_) :  n(n
     m(m_), u(n+1, std::vector<double>(m+1, 0)), Error(n+1, std::vector<double>(m+1, 0)), eps(eps_), omega(omega_), Nmax(Nmax_), hx(1.0/n), ky(1.0/m),
     iter(0), maxDiff(0.0), nevyazkaMax(0.0), maxError(0.0), time(0.0)
 {
-    if(eps < 0)
+    if(n <= 0)
+        throw TestTaskEx("n must be >= 0");
+    else if (m <= 0)
+        TestTaskEx("m must be >= 0");
+    else if(eps < 0)
         throw TestTaskEx("eps must be > 0");
     else if (omega < 0 || omega > 2)
         throw TestTaskEx("omega must be [0, 2), if you choose omega = 2, then omega will take the optimal value for the given n and m");
@@ -21,16 +25,15 @@ TestTask::TestTask(int n_, int m_, double eps_, double omega_, int Nmax_) :  n(n
     if (omega >= 2) {
         omega = 2.0 / (1 + 2 * sin(M_PI * hx / 2));
     }
-
 }
 
 
 
-double TestTask::u_func(double x, double y) {
+double TestTask::u_func(const double x, const double y) {
     return exp(pow(sin(M_PI * x * y), 2));
 }
 
-double TestTask::f_func(double x, double y) {
+double TestTask::f_func(const double x, const double y) {
     return -2 * M_PI * M_PI * exp(pow(sin(M_PI * x * y), 2)) * (y * y * pow(cos(M_PI * x * y), 2) + x * x * pow(cos(M_PI * x * y), 2) + pow(sin(M_PI * x * y), 2) * cos(2 * M_PI * x * y) * (y * y + x * x));
 }
 
@@ -87,9 +90,7 @@ void TestTask::calculateIst() {
         outFile1 << "\n";
     }
     outFile1.close();
-    std::string empty(10, ' ');
     str = "File 1istinnoe.csv is ready\n";
-
     }
     emit fileInfo(str);
 }
@@ -113,7 +114,6 @@ void TestTask::calculateChisl() {
                 u[i][j] = u_new;
                 double diff = fabs(u_new - u_old);
                 if (diff > maxDiff) maxDiff = diff;
-
             }
         }
 
@@ -127,26 +127,26 @@ void TestTask::calculateChisl() {
         str = "File 2 is not open.\n";
     }
     else {
-    outFile2 << ";";
-    for (int i = 0; i <= n; i++) {
-        outFile2 << "x" << i;
-        if (i < n)
-            outFile2 << ";";
-    }
-    outFile2 << "\n";
-
-    for (int j = 0; j < m + 1; j++) {
-        outFile2 << "y" << j << ";";
-        for (int i = 0; i < n + 1; i++) {
-            outFile2 << std::setprecision(30) << u[i][j];
+        outFile2 << ";";
+        for (int i = 0; i <= n; i++) {
+            outFile2 << "x" << i;
             if (i < n)
                 outFile2 << ";";
-
         }
         outFile2 << "\n";
-    }
-    outFile2.close();
-    str = "File 2chislennoe.csv is ready\n";
+
+        for (int j = 0; j < m + 1; j++) {
+            outFile2 << "y" << j << ";";
+            for (int i = 0; i < n + 1; i++) {
+                outFile2 << std::setprecision(30) << u[i][j];
+                if (i < n)
+                    outFile2 << ";";
+
+            }
+            outFile2 << "\n";
+        }
+        outFile2.close();
+        str = "File 2chislennoe.csv is ready\n";
     }
     emit fileInfo(str);
 
@@ -160,10 +160,9 @@ void TestTask::calculateError() {
         double y = j * ky;
         for (int i = 0; i < n + 1; i++) {
             double x = i * hx;
-            double err = fabs(u[i][j] - u_func(x, y));
-            Error[i][j] = err;
-            if (err > maxError) {
-                maxError = err;
+            Error[i][j] = fabs(u[i][j] - u_func(x, y));
+            if (Error[i][j] > maxError) {
+                maxError = Error[i][j];
             }
         }
     }
@@ -213,7 +212,6 @@ void TestTask::calculateError() {
     emit progress(100 / eps);
 }
 void TestTask::compute() {
-    //emit finished(false);
     unsigned int start = clock();
     set_GU();
     set_inter();

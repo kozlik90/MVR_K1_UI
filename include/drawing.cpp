@@ -11,18 +11,15 @@ Drawing::Drawing(QWidget* pwgt) : QOpenGLWidget(pwgt), m_xRotate(0), m_yRotate(0
 void Drawing::draw(TestTask* t, TestImageType type)
 {
     task = t;
-    mainTask = nullptr;
     funcType = type;
     update();
 }
 
 void Drawing::draw(MainTask* t, MainImageType type) {
     mainTask = t;
-    task = nullptr;
     funcType = type;
     update();
 }
-
 
 
 void Drawing::initializeGL() {
@@ -59,7 +56,6 @@ void Drawing::paintGL() {
 
 
     if(task != nullptr){
-        //if(!std::strcmp(task->metaObject()->className(), "TestTask")) {
         switch (funcType) {
         case TestImageType::Real:
             drawAxes();
@@ -82,11 +78,10 @@ void Drawing::paintGL() {
             clear();
             break;
         }
-        //}
+
 
     }
     else if(mainTask != nullptr) {
-        //if(!std::strcmp(mainTask->metaObject()->className(), "MainTask")) {
         switch (funcType) {
         case MainImageType::Numerical1:
             drawAxes();
@@ -117,7 +112,6 @@ void Drawing::paintGL() {
             clear();
             break;
         }
-        //}
     }
 
     glFlush();
@@ -129,6 +123,7 @@ void Drawing::mousePressEvent(QMouseEvent* pe) {
 
 void Drawing::mouseMoveEvent(QMouseEvent* pe) {
     if(pe->buttons() == Qt::RightButton) {
+
         m_xRotate += 180 * (GLfloat)(pe->y() - m_ptPosition.y()) / height();
         m_yRotate += 180 * (GLfloat)(pe->x() - m_ptPosition.x()) / width();
     }
@@ -142,9 +137,7 @@ void Drawing::mouseMoveEvent(QMouseEvent* pe) {
 }
 void Drawing::wheelEvent(QWheelEvent* pe) {
     const qreal scaleCoef = 1.1;
-    // Если колесико повернуто вперед, то масштаб увеличивается, если назад - уменьшается
-    qreal newScale = pe->angleDelta().y() > 0 ? m_scale * scaleCoef :
-                         m_scale / scaleCoef;
+    qreal newScale = pe->angleDelta().y() > 0 ? m_scale * scaleCoef : m_scale / scaleCoef;
     m_scale = newScale;
     update();
 }
@@ -155,6 +148,7 @@ void Drawing::drawTestReal()
     glLineWidth(2.0f);
     int n = task->n;
     int m = task->m;
+    std::vector<std::vector<double>> vec(n+1, std::vector<double>(m+1, 0));
     double hx = 1.0 / n;
     double ky = 1.0 / m;
     double minZ = 1e9, maxZ = -1e9;
@@ -162,36 +156,36 @@ void Drawing::drawTestReal()
         for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
-            double z = task->u_func(x, y);
+            double z = vec[i][j] = task->u_func(x, y);
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
 
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
-            float t = (task->u_func(x, y) - minZ) / (maxZ - minZ);
+            float t = (vec[i][j] - minZ) / (maxZ - minZ);
             glColor3f(t, 0.0f, 1.0f - t);
-            glVertex3d(x, y, task->u_func(x, y));
+            glVertex3d(x, y, vec[i][j]);
 
         }
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
-            float t = (task->u_func(x, y) - minZ) / (maxZ - minZ);
+            float t = (vec[i][j] - minZ) / (maxZ - minZ);
             glColor3f(t, 0.0f, 1.0f - t);
-            glVertex3d(x, y, task->u_func(x, y));
+            glVertex3d(x, y, vec[i][j]);
         }
         glEnd();
     }
@@ -206,8 +200,6 @@ void Drawing::drawTestNumerical() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = task->u[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -215,9 +207,9 @@ void Drawing::drawTestNumerical() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -229,9 +221,9 @@ void Drawing::drawTestNumerical() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -256,8 +248,6 @@ void Drawing::drawTestInitApprox() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = test.u[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -265,9 +255,9 @@ void Drawing::drawTestInitApprox() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -279,9 +269,9 @@ void Drawing::drawTestInitApprox() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -303,8 +293,6 @@ void Drawing::drawTestError() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = task->Error[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -312,9 +300,9 @@ void Drawing::drawTestError() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -326,9 +314,9 @@ void Drawing::drawTestError() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -350,8 +338,6 @@ void Drawing::drawMainNumerical1() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = mainTask->v1[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -359,9 +345,9 @@ void Drawing::drawMainNumerical1() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -373,9 +359,9 @@ void Drawing::drawMainNumerical1() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -397,8 +383,6 @@ void Drawing::drawMainNumerical2() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= 2*n; i++) {
         for (int j = 0; j <= 2*m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = mainTask->v2[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -406,9 +390,9 @@ void Drawing::drawMainNumerical2() {
         }
     }
 
-    for (int i = 0; i < 2*n; i++) {
+    for (int i = 0; i <= 2*n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < 2*m; j++) {
+        for (int j = 0; j <= 2*m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -420,9 +404,9 @@ void Drawing::drawMainNumerical2() {
         glEnd();
     }
 
-    for (int j = 0; j < 2*m; j++) {
+    for (int j = 0; j <= 2*m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < 2*n; i++) {
+        for (int i = 0; i <= 2*n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -447,8 +431,6 @@ void Drawing::drawMainInitApprox1() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = mt.v1[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -456,9 +438,9 @@ void Drawing::drawMainInitApprox1() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -470,9 +452,9 @@ void Drawing::drawMainInitApprox1() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -497,8 +479,6 @@ void Drawing::drawMainInitApprox2() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = mt.v2[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -506,9 +486,9 @@ void Drawing::drawMainInitApprox2() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -520,9 +500,9 @@ void Drawing::drawMainInitApprox2() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -544,8 +524,6 @@ void Drawing::drawMainError() {
     double minZ = 1e9, maxZ = -1e9;
     for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= m; j++) {
-            double x = i * hx;
-            double y = j * ky;
             double z = mainTask->Error[i][j];
             if (z < minZ) minZ = z;
             if (z > maxZ) maxZ = z;
@@ -553,9 +531,9 @@ void Drawing::drawMainError() {
         }
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i <= n; i++) {
         glBegin(GL_LINE_STRIP);
-        for (int j = 0; j < m; j++) {
+        for (int j = 0; j <= m; j++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -567,9 +545,9 @@ void Drawing::drawMainError() {
         glEnd();
     }
 
-    for (int j = 0; j < m; j++) {
+    for (int j = 0; j <= m; j++) {
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             double x = i * hx;
             double y = j * ky;
 
@@ -585,15 +563,13 @@ void Drawing::drawMainError() {
 
 void Drawing::clear()
 {
-
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     glFlush();
     update();
-
-
 }
+
+
 void Drawing::drawAxes(float length) {
     glLineWidth(2.0f); // можно увеличить толщину линий
     glBegin(GL_LINES);
@@ -610,6 +586,6 @@ void Drawing::drawAxes(float length) {
     // Ось Z (синий)
     glColor3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, length);
+    glVertex3f(0.0f, 0.0f, length + 1.0f);
     glEnd();
 }

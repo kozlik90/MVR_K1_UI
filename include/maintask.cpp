@@ -8,7 +8,11 @@ MainTask::MainTask(int n_, int m_, double eps_, double omega_, int Nmax_) : n(n_
     v2(n2+1, std::vector<double>(m2 + 1, 0)), Error(n+1, std::vector<double>(m+1, 0)), eps(eps_), eps2(eps_/10.0), omega(omega_),
     omega2(omega_), Nmax(Nmax_), Nmax2(Nmax_ * 1.5), iter(0), iter2(0), maxDiff(0.0), maxDiff2(0.0), nevyazkaMax(0.0), nevyazkaMax2(0.0), time(0.0)
 {
-    if(eps < 0)
+    if(n <= 0)
+        throw MainTaskEx("n must be >= 0");
+    else if (m <= 0)
+        MainTaskEx("m must be >= 0");
+    else if(eps < 0)
         throw MainTaskEx("eps must be > 0");
     else if(omega < 0 || omega > 2)
         throw MainTaskEx("omega must be [0, 2), if you choose omega = 2, then omega will take the optimal value for the given n and m");
@@ -22,11 +26,11 @@ MainTask::MainTask(int n_, int m_, double eps_, double omega_, int Nmax_) : n(n_
     }
 }
 
-double MainTask::f_func(double x, double y) {
+double MainTask::f_func(const double x, const double y) {
     return sin(PI * x * y) * sin(PI * x * y);
 }
 
-void MainTask::set_GU(std::vector<std::vector<double>>& u, int n_, int m_) {
+void MainTask::set_GU(std::vector<std::vector<double>>& u,  const int n_, const int m_) {
     double hx = 1.0 / n_;
     double ky = 1.0 / m_;
     for (int j = 0; j <= m_; j++) {
@@ -42,7 +46,7 @@ void MainTask::set_GU(std::vector<std::vector<double>>& u, int n_, int m_) {
     }
 }
 
-void MainTask::set_inter(std::vector<std::vector<double>>& u, int n_, int m_) {
+void MainTask::set_inter(std::vector<std::vector<double>>& u, const int n_, const int m_) {
     double hx = 1.0 / n_;
     for (int i = 1; i < n_; i++) {
         double x = i * hx;
@@ -52,7 +56,7 @@ void MainTask::set_inter(std::vector<std::vector<double>>& u, int n_, int m_) {
     }
 }
 
-void MainTask::calculateChisl(std::vector<std::vector<double>>& v, int n_, int m_, double eps_, double omega_, int Nmax_, int& iter_, double& maxDiff_) {
+void MainTask::calculateChisl(std::vector<std::vector<double>>& v, const int n_, const int m_, const double eps_, const double omega_, const int Nmax_, int& iter_, double& maxDiff_) {
     double hx = 1.0 / n_;
     double ky = 1.0 / m_;
 
@@ -92,71 +96,6 @@ void MainTask::calculateChisl(std::vector<std::vector<double>>& v, int n_, int m
         writeChisl1();
     }
     else if (n_ == n2) writeChisl2();
-
-
-}
-
-void MainTask::writeChisl1() {
-    double hx2 = 1.0 / n;
-    double ky2 = 1.0 / m;
-    std::ofstream outFile11("1_chislennoe.csv");
-    if (!outFile11.is_open()) {
-        qDebug() << "File 1_chislennoe is not open.\n";
-        //return 1;
-    }
-    outFile11 << ";";
-    for (int i = 0; i <= n; i++) {
-        outFile11 << "x" << i;
-        if (i < n)
-            outFile11 << ";";
-    }
-    outFile11 << "\n";
-    for (int j = 0; j < m + 1; j++) {
-        outFile11 << "y" << j << ";";
-        for (int i = 0; i < n + 1; i++) {
-            double x = j * hx2;
-            double y = i * ky2;
-            outFile11 << std::setprecision(30) << v1[i][j];
-            if (i < n)
-                outFile11 << ";";
-        }
-        outFile11 << "\n";
-    }
-    outFile11.close();
-    QString str = "File 1_chislennoe.csv is ready\n";
-    emit fileInfo(str);
-}
-
-void MainTask::writeChisl2() {
-    double h2x = 1.0 / n2;
-    double k2y = 1.0 / m2;
-    std::ofstream outFile22("2_chislennoe.csv");
-    if (!outFile22.is_open()) {
-        qDebug() << "File 2_chislennoe is not open.\n";
-        //return 1;
-    }
-    outFile22 << ";";
-    for (int i = 0; i <= n2; i++) {
-        outFile22 << "x" << i*0.5;
-        if (i < n2)
-            outFile22 << ";";
-    }
-    outFile22 << "\n";
-    for (int j = 0; j < m2 + 1; j++) {
-        outFile22 << "y" << j*0.5 << ";";
-        for (int i = 0; i < n2 + 1; i++) {
-            double x = j * h2x;
-            double y = i * k2y;
-            outFile22 << std::setprecision(30) << v2[i][j];
-            if (i < n2)
-                outFile22 << ";";
-
-        }
-        outFile22 << "\n";
-    }
-    outFile22.close();
-    QString str = "File 2_chislennoe2.csv is ready\n";
-    emit fileInfo(str);
 }
 
 void MainTask::calculateError() {
@@ -167,39 +106,15 @@ void MainTask::calculateError() {
     double h2x = 1.0 / n2;
     double k2y = 1.0 / m2;
 
-    std::ofstream outFile33("3_pogreshnost.csv");
-    if (!outFile33.is_open()) {
-        qDebug() << "File 3_pogreshnost is not open.\n";
-        //return 1;
-    }
-    outFile33 << ";";
-    for (int i = 0; i <= n; i++) {
-        outFile33 << "x" << i;
-        if (i < n)
-            outFile33 << ";";
-    }
-    outFile33 << "\n";
-
-    maxError = 0.0;
     for (int j = 0; j < m + 1; j++) {
-        outFile33 << "y" << j << ";";
         for (int i = 0; i < n + 1; i++) {
-            double diff = fabs(v1[i][j] - v2[2 * i][2 * j]);
-            Error[i][j] = diff;
-            outFile33 << std::setprecision(30) << diff;
-            if (i < n)
-                outFile33 << ";";
-
-            if (diff > maxError) {
-
-                maxError = diff;
+            Error[i][j] = fabs(v1[i][j] - v2[2 * i][2 * j]);
+            if (Error[i][j] > maxError) {
+                maxError = Error[i][j];
             }
         }
-        outFile33 << "\n";
     }
-    outFile33.close();
-    QString str = "File 3_pogreshnost.csv is ready\n";
-    emit fileInfo(str);
+
     for (int i = 1; i < n; i++) {
         for (int j = 1; j < m; j++) {
             double x = i * hx2;
@@ -227,11 +142,105 @@ void MainTask::calculateError() {
                 nevyazkaMax2 = fabs(r);
         }
     }
+    writeError();
     emit progress(100 / eps2);
 }
 
+void MainTask::writeChisl1() {
+    QString str = "";
+    std::ofstream outFile11("1_chislennoe.csv");
+    if (!outFile11.is_open()) {
+        str = "File 1_chislennoe is not open.\n";
+    }
+    else {
+        outFile11 << ";";
+        for (int i = 0; i <= n; i++) {
+            outFile11 << "x" << i;
+            if (i < n)
+                outFile11 << ";";
+        }
+        outFile11 << "\n";
+        for (int j = 0; j < m + 1; j++) {
+            outFile11 << "y" << j << ";";
+            for (int i = 0; i < n + 1; i++) {
+                outFile11 << std::setprecision(30) << v1[i][j];
+                if (i < n)
+                    outFile11 << ";";
+            }
+            outFile11 << "\n";
+        }
+        outFile11.close();
+        str = "File 1_chislennoe.csv is ready\n";
+    }
+    emit fileInfo(str);
+}
+
+void MainTask::writeChisl2() {
+    QString str = "";
+    std::ofstream outFile22("2_chislennoe.csv");
+    if (!outFile22.is_open()) {
+        str = "File 2_chislennoe is not open.\n";
+    }
+    else {
+        outFile22 << ";";
+        for (int i = 0; i <= n2; i++) {
+            outFile22 << "x" << i*0.5;
+            if (i < n2)
+                outFile22 << ";";
+        }
+        outFile22 << "\n";
+        for (int j = 0; j < m2 + 1; j++) {
+            outFile22 << "y" << j*0.5 << ";";
+            for (int i = 0; i < n2 + 1; i++) {
+                outFile22 << std::setprecision(30) << v2[i][j];
+                if (i < n2)
+                    outFile22 << ";";
+
+            }
+            outFile22 << "\n";
+        }
+        outFile22.close();
+        str = "File 2_chislennoe2.csv is ready\n";
+    }
+    emit fileInfo(str);
+}
+
+void MainTask::writeError() {
+    QString str = "";
+    std::ofstream outFile33("3_pogreshnost.csv");
+    if (!outFile33.is_open()) {
+        str = "File 3_pogreshnost is not open.\n";
+    }
+    else {
+        outFile33 << ";";
+        for (int i = 0; i <= n; i++) {
+            outFile33 << "x" << i;
+            if (i < n)
+                outFile33 << ";";
+        }
+        outFile33 << "\n";
+
+        for (int j = 0; j < m + 1; j++) {
+            outFile33 << "y" << j << ";";
+            for (int i = 0; i < n + 1; i++) {
+
+                outFile33 << std::setprecision(30) << Error[i][j];
+                if (i < n)
+                    outFile33 << ";";
+            }
+            outFile33 << "\n";
+        }
+        outFile33.close();
+        str = "File 3_pogreshnost.csv is ready\n";
+    }
+    emit fileInfo(str);
+}
+
+
+
+
+
 void MainTask::compute() {
-    //emit finished(false);
     unsigned int start = clock();
     set_GU(v1, n, m);
     set_inter(v1, n, m);

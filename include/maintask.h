@@ -24,17 +24,18 @@ private:
     double eps2, omega2;
     int Nmax, Nmax2;
     const double PI = 3.14159265358979323846;
-    void set_GU(std::vector<std::vector<double>>&, int, int);
-    void set_inter(std::vector<std::vector<double>>&, int, int);
-    void calculateChisl(std::vector<std::vector<double>>&, int, int, double, double, int, int&, double&);
+    void set_GU(std::vector<std::vector<double>>&, const int, const int);
+    void set_inter(std::vector<std::vector<double>>&, const int, const int);
+    void calculateChisl(std::vector<std::vector<double>>&, const int, const int, const double, const double, const int, int&, double&);
     void calculateError();
-    double f_func(double, double);
+    double f_func(const double, const double);
     void writeChisl1();
     void writeChisl2();
+    void writeError();
     double time;
     friend class Drawing;
 public:
-    MainTask(int, int, double, double, int);
+    explicit MainTask(int, int, double, double, int);
     void printInfo();
 public slots:
     void compute();
