@@ -49,38 +49,40 @@ MainWindow::~MainWindow()
 void MainWindow::on_calcButton_clicked()
 
 {
-    drawingTestReal->draw(testTask, Drawing::TestImageType::Clear);
-    drawingTestNumerical->draw(testTask, Drawing::TestImageType::Clear);
-    drawingTestInitApprox->draw(testTask, Drawing::TestImageType::Clear);
-    drawingTestError->draw(testTask, Drawing::TestImageType::Clear);
-
-    drawingMainNumerical1->draw(mainTask, Drawing::MainImageType::Clr);
-    drawingMainNumerical2->draw(mainTask, Drawing::MainImageType::Clr);
-    drawingMainInitApprox1->draw(mainTask, Drawing::MainImageType::Clr);
-    drawingMainInitApprox2->draw(mainTask, Drawing::MainImageType::Clr);
-    drawingMainError->draw(mainTask, Drawing::MainImageType::Clr);
-
-    ui->calcButton->setEnabled(false);
-
     delete testTask;
     testTask = nullptr;
     delete mainTask;
     mainTask = nullptr;
     delete thread;
     thread = nullptr;
-
-    ui->infoBrowser->clear();
-    ui->progressBar->setValue(0);
-    thread = new QThread();
-
-    int n = ui->n_Line->text().toInt();
-    int m = ui->m_Line->text().toInt();
-    double eps = ui->eps_Line->text().toDouble();
-    double omega = ui->omega_Line->text().toDouble();
-    int Nmax = ui->nMax_Line->text().toInt();
-    int max = 0;
-
     try{
+        drawingTestReal->draw(testTask, Drawing::TestImageType::Clear);
+        drawingTestNumerical->draw(testTask, Drawing::TestImageType::Clear);
+        drawingTestInitApprox->draw(testTask, Drawing::TestImageType::Clear);
+        drawingTestError->draw(testTask, Drawing::TestImageType::Clear);
+
+        drawingMainNumerical1->draw(mainTask, Drawing::MainImageType::Clr);
+        drawingMainNumerical2->draw(mainTask, Drawing::MainImageType::Clr);
+        drawingMainInitApprox1->draw(mainTask, Drawing::MainImageType::Clr);
+        drawingMainInitApprox2->draw(mainTask, Drawing::MainImageType::Clr);
+        drawingMainError->draw(mainTask, Drawing::MainImageType::Clr);
+
+        ui->calcButton->setEnabled(false);
+
+
+
+        ui->infoBrowser->clear();
+        ui->progressBar->setValue(0);
+        thread = new QThread();
+
+        int n = ui->n_Line->text().toInt();
+        int m = ui->m_Line->text().toInt();
+        double eps = ui->eps_Line->text().toDouble();
+        double omega = ui->omega_Line->text().toDouble();
+        int Nmax = ui->nMax_Line->text().toInt();
+        int max = 0;
+
+
         if(ui->radioTest_btn->isChecked()) {
             ui->widget1->raise();
             ui->widget2->raise();

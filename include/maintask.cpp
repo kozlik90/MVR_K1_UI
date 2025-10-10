@@ -14,8 +14,8 @@ MainTask::MainTask(int n_, int m_, double eps_, double omega_, int Nmax_) : n(n_
         MainTaskEx("m must be >= 0");
     else if(eps < 0)
         throw MainTaskEx("eps must be > 0");
-    else if(omega < 0 || omega > 2)
-        throw MainTaskEx("omega must be [0, 2), if you choose omega = 2, then omega will take the optimal value for the given n and m");
+    else if(omega <= 0 || omega > 2)
+        throw MainTaskEx("omega must be (0, 2), if you choose omega = 2, then omega will take the optimal value for the given n and m");
     else if(Nmax < 0)
         throw MainTaskEx("Nmax must be > 0");
     if(omega >= 2) {
