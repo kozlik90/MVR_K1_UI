@@ -27,6 +27,7 @@ _За счет выбора размерности сетки (n, m), парам
 
 
 ### Примеры работы программы
+Для пользовательского интерфейса используется фрэймворк Qt. Для отображения поверхностей используется OpenGL.
 [![image.png](https://i.postimg.cc/7hR8tdrS/image.png)](https://postimg.cc/H8bhVSxL)
 [![image.png](https://i.postimg.cc/Y9ystFDw/image.png)](https://postimg.cc/CBkNNRVv)
 [![image.png](https://i.postimg.cc/DZ8KQnRr/image.png)](https://postimg.cc/hzWwcWDv)
